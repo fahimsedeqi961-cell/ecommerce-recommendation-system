@@ -6,33 +6,35 @@ import jwt from "jsonwebtoken"
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { username, email, password } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).send("User already exist");
+      return res.status(400).json({ message: "This email is already registered" });
     }
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const salt = await bcrypt.genSalt(10)
+    const hashedPassword = await bcrypt.hash(password, salt);
     const newUser = new User({
-      name,
+      username,
       email,
       password: hashedPassword
     });
     await newUser.save();
+
     res.status(201).json({
       success: true,
-      message: "User Registered",
+      message: "User Registered Successfully!",
       data: {
         id: newUser._id,
-        name: newUser.name,
+        name: newUser.username,
         email: newUser.email
       }
     });
 
   } catch (error) {
+    console.log("Registration error:", error)
     res.status(500).json({
-      success: false,
-      message: "Failed to register",
+      message: "Internal server registry error",
       error: error.message
     })
   }
@@ -44,21 +46,19 @@ export const login = async (req, res) => {
     // find the user 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).send("User not found");
+      return res.status(400).json({ message: "Invalid email or password credentials." });
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).send("Wrong password");
+      return res.status(400).json({ message: "Invalid email or password credentials." });
     }
 
     // if passowrd matched atach token 
-
     const token = jwt.sign(
       { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      process.env.JWT_SECRET || "fallback_secret",
+      { expiresIn: "30d" }
     );
-    console.log(process.env.JWT_SECRET);
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -66,17 +66,19 @@ export const login = async (req, res) => {
       sameSite: "strict",
       maxAge: 60 * 60 * 1000
     })
+
     res.json({
       success: true,
-      message: "Login successfull",
+      message: "Login successfull!",
       user: {
         id: user.id,
-        name: user.name,
+        username: user.username,
         email: user.email
       }
     });
 
   } catch (error) {
-    res.status(500).send(error.message);
+    console.log("Login error:", error);
+    res.status(500).json({ message: "Internal server login error." })
   }
 }

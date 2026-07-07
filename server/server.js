@@ -17,15 +17,17 @@ const app = express();
 const PORT = process.env.PORT || 2000;
 
 
-app.use(cors());
-{/**
-  
-app.use(cors({
-  origin: "http://localhost:5174", // Matches your exact Vite frontend port
+
+
+const corsOptions = {
+  origin: "http://localhost:5174",
+  credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));  
-*/}
+  allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 200
+}
+app.use(cors(corsOptions));
+
 
 
 app.use((req, res, next) => {

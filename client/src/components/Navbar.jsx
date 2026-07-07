@@ -1,5 +1,6 @@
 import { Menu, X, ShoppingCart, Search, User, ChevronDown, Sparkles } from 'lucide-react';
 import { useState } from "react"
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,21 +23,23 @@ const Navbar = () => {
 
           {/* Logo (Centered on Mobile, Left on Desktop) */}
           <div className="flex-1 flex justify-center md:justify-start items-center">
-            <div className="flex items-center gap-2 cursor-pointer group">
+            <Link
+              to="/"
+              className="flex items-center gap-2 cursor-pointer group">
               <div className="bg-indigo-600 p-2 rounded-xl text-white shadow-sm shadow-indigo-200 group-hover:bg-indigo-700 transition-colors">
                 <Sparkles size={20} />
               </div>
               <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
                 SmartShop
               </span>
-            </div>
+            </Link>
 
-            {/* Desktop Navigation Links */}
+            {/* Desktop Navigation \ */}
             <div className="hidden md:flex ml-10 space-x-8 text-sm font-medium text-slate-600">
-              <a href="#home" className="hover:text-indigo-600 transition-colors py-2">Home</a>
+              <Link to="/" className="hover:text-indigo-600 transition-colors py-2">Home</Link>
               <a href="#products" className="hover:text-indigo-600 transition-colors py-2">Products</a>
 
-              {/* Dropdown Link Example for Categories */}
+              {/* Dropdown Link for Categories */}
               <div className="relative group/menu">
                 <button className="flex items-center gap-1 hover:text-indigo-600 transition-colors py-2">
                   Categories <ChevronDown size={14} />
@@ -69,10 +72,10 @@ const Navbar = () => {
             </button>
 
             {/* Login - Desktop Only */}
-            <button className="hidden md:flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors px-3 py-2 rounded-xl hover:bg-slate-50">
+            <Link to="/login" className="hidden md:flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors px-3 py-2 rounded-xl hover:bg-slate-50">
               <User size={18} />
               <span>Login</span>
-            </button>
+            </Link>
 
             {/* Cart (Right side on both Mobile and Desktop) */}
             <button className="relative p-2 text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-xl transition-colors">
@@ -121,10 +124,10 @@ const Navbar = () => {
 
           {/* Mobile Menu Footer (Login/Profile) */}
           <div className="pt-6 border-t border-slate-100">
-            <button className="flex items-center justify-center gap-2 w-full bg-slate-50 text-slate-700 font-medium py-3 rounded-xl border border-slate-100 hover:bg-slate-100 transition-colors">
+            <Link to="/login" className="flex items-center justify-center gap-2 w-full bg-slate-50 text-slate-700 font-medium py-3 rounded-xl border border-slate-100 hover:bg-slate-100 transition-colors">
               <User size={18} />
               <span>Sign In / Register</span>
-            </button>
+            </Link>
           </div>
         </div>
       </div>
