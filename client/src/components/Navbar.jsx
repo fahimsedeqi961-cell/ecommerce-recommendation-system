@@ -1,8 +1,10 @@
 import { Menu, X, ShoppingCart, Search, User, ChevronDown, Sparkles } from 'lucide-react';
 import { useState } from "react"
 import { Link } from "react-router-dom";
+import { useCart } from '../context/CartContext';
 
 const Navbar = () => {
+  const { cartCount } = useCart()
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -78,12 +80,15 @@ const Navbar = () => {
             </Link>
 
             {/* Cart (Right side on both Mobile and Desktop) */}
-            <button className="relative p-2 text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-xl transition-colors">
+            <Link to="/cart"
+              className="relative p-2 text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-xl transition-colors">
               <ShoppingCart size={22} />
-              <span className="absolute top-1 right-1 w-4 h-4 bg-indigo-600 rounded-full text-[10px] font-bold text-white flex items-center justify-center">
-                3
-              </span>
-            </button>
+              {cartCount > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 bg-indigo-600 rounded-full text-[10px] font-bold text-white flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
           </div>
 
         </div>

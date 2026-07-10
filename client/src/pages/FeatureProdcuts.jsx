@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Star, ShoppingCart, Tag, Heart } from 'lucide-react';
+import { useCart } from '../context/CartContext';
 
 const FeatureProducts = () => {
+
+  const { addToCart } = useCart();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -41,7 +45,7 @@ const FeatureProducts = () => {
   }
 
   return (
-    <section className="bg-slate-50 py-12 md:py-16 border-t border-slate-100">
+    <section id="products" className="bg-slate-50 py-12 md:py-16 border-t border-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Section Header */}
@@ -56,7 +60,7 @@ const FeatureProducts = () => {
 
         {/* 4-Column Product Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.slice(0, 30).map((product) => (
+          {products.slice(0, 100).map((product) => (
             <div
               key={product._id || product.id}
               className="bg-white border border-slate-200/60 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-slate-100 hover:border-indigo-100 transition-all duration-300 flex flex-col group relative"
@@ -75,7 +79,7 @@ const FeatureProducts = () => {
               <div className="w-full aspect-square bg-slate-50 flex items-center justify-center relative overflow-hidden border-b border-slate-100">
                 {product.image ? (
                   <img
-                    src={product.image}
+                    src={product.image?.[0]}
                     alt={product.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                     onError={(e) => {
@@ -154,7 +158,8 @@ const FeatureProducts = () => {
 
                   <button
                     disabled={product.stock <= 0}
-                    className="p-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-all active:scale-95 shadow-sm shadow-indigo-100"
+                    onClick={() => addToCart(product)}
+                    className="p-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed transition-all active:scale-95 shadow-sm shadow-indigo-100 cursor-pointer"
                   >
                     <ShoppingCart size={16} />
                   </button>

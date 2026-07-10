@@ -7,7 +7,7 @@ import connectDB from "./config/db.js"
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes.js"
 import productRoutes from "./routes/productRoutes.js"
-
+import cartRoutes from "./routes/cartRoutes.js"
 
 
 import dotenv from "dotenv"
@@ -46,6 +46,9 @@ connectDB();
 app.use("/api/auth", authRoutes);
 
 app.use("/api/products", productRoutes);
+app.use("/api/cart", cartRoutes);
+
+
 
 app.listen(PORT, () => {
   console.log("Server is running on port", PORT);

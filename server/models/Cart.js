@@ -1,14 +1,31 @@
 import mongoose, { Schema } from "mongoose";
 
+
 const cartSchema = new mongoose.Schema({
-  user: ObjectId,
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    unique: true // One cart document per user profile
+  },
   items: [
     {
-      product: ObjectId,
-      quantity: Number
+      productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product',
+        required: true
+      },
+      quantity: {
+        type: Number,
+        required: true,
+        default: 1,
+        min: [1, 'Quantity cannot be less than 1.']
+      }
     }
   ]
-});
+}, { timestamps: true });
 
-const Cart = mongoose.model("Cart", cartSchema);
+const Cart = mongoose.model('Cart', cartSchema);
 export default Cart;
+
+
