@@ -1,20 +1,73 @@
-import { Smartphone, Laptop, Watch, Gamepad2, ArrowRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Smartphone, Gamepad2, Sofa, Flower2, Sparkles, ShoppingBag, ArrowRight } from 'lucide-react';
 
-const FeaturedCategories = () => {
-  // Simple static array for your frontend demonstration
-  const categories = [
-    { id: 1, name: 'Smartphones', count: '120+ Items', icon: <Smartphone size={28} />, color: 'bg-blue-50 text-blue-600 border-blue-100' },
-    { id: 2, name: 'Laptops', count: '80+ Items', icon: <Laptop size={28} />, color: 'bg-indigo-50 text-indigo-600 border-indigo-100' },
-    { id: 3, name: 'Wearables', count: '45+ Items', icon: <Watch size={28} />, color: 'bg-purple-50 text-purple-600 border-purple-100' },
-    { id: 4, name: 'Gaming Gear', count: '60+ Items', icon: <Gamepad2 size={28} />, color: 'bg-pink-50 text-pink-600 border-pink-100' },
-  ];
+const FeaturedCategories = ({ activeCategory, setActiveCategory }) => {
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  // Safely map specific lucide icons to your exact backend category strings
+  const getCategoryIcon = (categoryName) => {
+    const name = categoryName.toLowerCase();
+    if (name.includes('phone') || name.includes('electronic')) return <Smartphone size={28} />;
+    if (name.includes('gaming') || name.includes('wearable')) return <Gamepad2 size={28} />;
+    if (name.includes('furniture') || name.includes('home')) return <Sofa size={28} />;
+    if (name.includes('beauty') || name.includes('skin')) return <Flower2 size={28} />;
+    if (name.includes('fragran') || name.includes('perfume')) return <Sparkles size={28} />;
+    return <ShoppingBag size={28} />; // Clean global fallback
+  };
+
+  useEffect(() => {
+    const extractCategoriesFromProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('http://localhost:2000/api/products');
+        if (!response.ok) throw new Error('Failed to fetch data');
+
+        const resJson = await response.json();
+        const products = resJson.data || [];
+
+        // 1. Collect unique category names from  live seeded products array
+        const uniqueCategoryNames = [...new Set(products.map(product => product.category))].filter(Boolean);
+
+        // 2. Format database parameters with automated item tally counts
+        const formattedCategories = uniqueCategoryNames.map((catName, index) => {
+          const count = products.filter(p => p.category === catName).length;
+          return {
+            id: index,
+            name: catName,
+            productCount: count
+          };
+        });
+
+        setCategories(formattedCategories);
+      } catch (err) {
+        console.error("Database connection error:", err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    extractCategoriesFromProducts();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-12 flex justify-center items-center h-48">
+        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (error || categories.length === 0) return null;
 
   return (
-    <section className="bg-white py-12 md:py-16">
+    <section className="bg-white py-12 md:py-16" id="categories">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4 text-left">
           <div>
             <h2 className="text-2xl font-bold text-slate-900 tracking-tight sm:text-3xl">
               Browse by Category
@@ -29,24 +82,38 @@ const FeaturedCategories = () => {
           </button>
         </div>
 
-        {/* Responsive Grid System */}
+        {/* Dynamic Connected Grid System */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {categories.map((category) => (
+          {categories.slice(0, 8).map((category) => (
             <div
               key={category.id}
-              className="group border border-slate-100 rounded-2xl p-5 sm:p-6 bg-white hover:border-indigo-100 hover:shadow-lg hover:shadow-indigo-50/50 transition-all duration-300 cursor-pointer flex flex-col items-center lg:items-start text-center lg:text-left"
+              onClick={() => {
+                // If you click an active category, it clears the filter. Otherwise, it updates it.
+                if (activeCategory === category.name) {
+                  setActiveCategory('');
+                } else {
+                  setActiveCategory(category.name);
+                }
+              }}
+              className={`group border rounded-2xl p-5 sm:p-6 bg-white hover:shadow-lg hover:shadow-indigo-50/50 transition-all duration-300 cursor-pointer flex flex-col items-center lg:items-start text-center lg:text-left ${activeCategory === category.name
+                ? 'border-indigo-600 ring-2 ring-indigo-500/15 shadow-md bg-indigo-50/10'
+                : 'border-slate-100 hover:border-indigo-100'
+                }`}
             >
               {/* Icon Bubble */}
-              <div className={`w-14 h-14 rounded-xl flex items-center justify-center border ${category.color} group-hover:scale-105 transition-transform duration-300`}>
-                {category.icon}
+              <div className={`w-14 h-14 rounded-xl flex items-center justify-center border transition-transform duration-300 group-hover:scale-105 ${activeCategory === category.name
+                ? 'bg-indigo-600 text-white border-indigo-700'
+                : 'bg-indigo-50 text-indigo-600 border-indigo-100'
+                }`}>
+                {getCategoryIcon(category.name)}
               </div>
 
               {/* Text Info */}
-              <h3 className="font-semibold text-slate-800 text-base sm:text-lg mt-4 group-hover:text-indigo-600 transition-colors">
+              <h3 className="font-semibold text-slate-800 text-base sm:text-lg mt-4 group-hover:text-indigo-600 transition-colors capitalize">
                 {category.name}
               </h3>
               <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                {category.count}
+                {category.productCount} {category.productCount === 1 ? 'Item' : 'Items'}
               </p>
             </div>
           ))}

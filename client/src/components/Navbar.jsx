@@ -62,8 +62,11 @@ const Navbar = () => {
             <div className="hidden md:flex items-center relative w-64">
               <input
                 type="text"
-                placeholder="Search smart recommendations..."
+                placeholder="Search smart inventory..."
                 className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-800 placeholder:text-slate-400"
+                onChange={(e) => {
+                  window.dispatchEvent(new CustomEvent('globalSearch', { detail: e.target.value }))
+                }}
               />
               <Search className="absolute left-3 text-slate-400" size={16} />
             </div>

@@ -1,36 +1,70 @@
 import { useState, useEffect } from 'react';
-import { Star, ShoppingCart, Tag, Heart } from 'lucide-react';
+import { Star, ShoppingCart, Tag, Heart, XCircle } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-
-const FeatureProducts = () => {
+import ProductDetails from '../components/ProductDetails';
+const FeatureProducts = ({ SearchQuery, activeCategory, setActiveCategory, setSearchQuery }) => {
 
   const { addToCart } = useCart();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [localSearch, setLocalSearch] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
+
+
+  // Listen to the global navbar input stream event handler smoothly
+  useEffect(() => {
+    const handleNavbarSearch = (e) => {
+      setLocalSearch(e.detail);
+    };
+    window.addEventListener('globalSearch', handleNavbarSearch);
+    return () => window.removeEventListener('globalSearch', handleNavbarSearch);
+  }, []);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchFilteredProducts = async () => {
       try {
         setLoading(true);
-        // Fetching products from the database
-        const response = await fetch('http://localhost:2000/api/products');
-        if (!response.ok) throw new Error('Network error fetching products');
-        const data = await response.json();
-        console.log(data);
-        setProducts(data.data);
+
+        // Build the dynamic URL parameters string matching your req.query keys
+        let url = `http://localhost:2000/api/products?`;
+        if (localSearch) url += `search=${localSearch}&`;
+        if (activeCategory) url += `category=${activeCategory}`;
+
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Query request failed');
+
+        const resJson = await response.json();
+
+        // Maps safely to  controller's payload envelope: data: products
+        setProducts(resJson.data || []);
         setError(false);
       } catch (err) {
-        console.error("Error loading products:", err);
+        console.error("API Search query breakdown:", err);
         setError(true);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
-  }, []);
+    // Debounce the network request slightly to prevent crashing your database on rapid typing
+    const delayTimer = setTimeout(() => {
+      fetchFilteredProducts();
+    }, 300);
+
+    return () => clearTimeout(delayTimer);
+  }, [localSearch, activeCategory]);
+
+
+
+  const clearFilters = () => {
+    setActiveCategory('');
+    setLocalSearch('');
+    // Clear out standard input boxes
+    window.dispatchEvent(new CustomEvent('globalSearch', { detail: '' }));
+  };
+
 
   if (loading) {
     return (
@@ -48,15 +82,36 @@ const FeatureProducts = () => {
     <section id="products" className="bg-slate-50 py-12 md:py-16 border-t border-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Section Header */}
-        <div className="mb-10 text-center md:text-left">
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight sm:text-3xl">
-            Featured Products
-          </h2>
-          <p className="text-slate-500 text-sm sm:text-base mt-1">
-            Explore premium handpicked items directly from our verified inventory catalog.
-          </p>
+        {/*Dynamic Section Header displaying active filters */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-10 gap-4 text-left">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900 tracking-tight sm:text-3xl">
+              {activeCategory ? `Category: ${activeCategory}` : 'Explore Catalog'}
+            </h2>
+            <p className="text-slate-500 text-sm mt-1">
+              {localSearch ? `Showing matches for "${localSearch}"` : 'Browse our premium verified database inventory listings.'}
+            </p>
+          </div>
+
+          {(activeCategory || localSearch) && (
+            <button
+              onClick={clearFilters}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 px-3 py-2 rounded-xl transition-colors self-start sm:self-auto shadow-sm"
+            >
+              <XCircle size={14} />
+              <span>Reset Active Filters</span>
+            </button>
+          )}
         </div>
+
+        {/* Empty Search State Feedback UI */}
+        {products.length === 0 && (
+          <div className="text-center py-16 bg-white border border-dashed border-slate-200 rounded-3xl p-6">
+            <span className="text-3xl block mb-2">🔍</span>
+            <h3 className="font-bold text-slate-800">No matching products found</h3>
+            <p className="text-sm text-slate-400 mt-1 max-w-xs mx-auto">We couldn't find database rows matching those criteria keywords. Try adjustment filters.</p>
+          </div>
+        )}
 
         {/* 4-Column Product Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -76,7 +131,9 @@ const FeatureProducts = () => {
               </div>
 
               {/* Real Product Image Frame from  Database */}
-              <div className="w-full aspect-square bg-slate-50 flex items-center justify-center relative overflow-hidden border-b border-slate-100">
+              <div
+                onClick={() => setSelectedProduct(product)}
+                className="w-full aspect-square bg-slate-50 flex items-center justify-center relative overflow-hidden border-b border-slate-100 cursor-pointer">
                 {product.image ? (
                   <img
                     src={product.image?.[0]}
@@ -169,6 +226,14 @@ const FeatureProducts = () => {
             </div>
           ))}
         </div>
+        {/* Selected Product Details */}
+        {selectedProduct && (
+          <ProductDetails
+            product={selectedProduct}
+            onClose={() => setSelectedProduct(null)}
+          />
+        )
+        }
 
       </div>
     </section>
