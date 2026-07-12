@@ -57,7 +57,7 @@ export const login = async (req, res) => {
     const token = jwt.sign(
       { id: user._id },
       process.env.JWT_SECRET || "fallback_secret",
-      { expiresIn: "30d" }
+      { expiresIn: "1h" }
     );
 
     res.cookie("token", token, {
@@ -81,4 +81,23 @@ export const login = async (req, res) => {
     console.log("Login error:", error);
     res.status(500).json({ message: "Internal server login error." })
   }
-}
+};
+
+
+// Logout 
+export const logout = async (req, res) => {
+  // Overwrites the token cookie with an empty string and instantly expires it
+  try {
+    res.cookie("token", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      expires: new Date(0), // Sets expiration date to past to clear it instantly
+    });
+
+    return res.status(200).json({ success: true, message: "Logged out successfully" });
+  } catch (error) {
+    console.log("Logout error", error)
+    return re.status(500).json({ message: "Internal server logout error" })
+  }
+};

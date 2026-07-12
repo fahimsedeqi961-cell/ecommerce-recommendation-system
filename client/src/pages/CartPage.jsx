@@ -1,10 +1,11 @@
 import { useCart } from '../context/CartContext';
 import { Trash2, Plus, Minus, ArrowLeft, ShoppingBag, CreditCard } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const CartPage = () => {
   const { cartItems, incrementQuantity, decrementQuantity, clearCart, cartTotal } = useCart();
-
+  const navigate = useNavigate();
   // Simple hardcoded values for a standard e-commerce pipeline
   const shippingFee = cartTotal > 100 || cartTotal === 0 ? 0 : 10;
   const estimatedTax = cartTotal * 0.08; // 8% Tax rate calculation
@@ -62,7 +63,7 @@ const CartPage = () => {
                 {/* Item Thumbnail Frame */}
                 <div className="w-20 h-20 bg-slate-50 border border-slate-100 rounded-xl overflow-hidden shrink-0">
                   <img
-                    src={item.image || "https://unsplash.com"}
+                    src={item.image?.[0] || "https://unsplash.com"}
                     alt={item.title}
                     className="w-full h-full object-cover"
                   />
@@ -141,7 +142,9 @@ const CartPage = () => {
             </div>
 
             {/* Checkout Interface Actions */}
-            <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm py-4 rounded-xl transition-all shadow-md shadow-indigo-100 flex items-center justify-center gap-2 group">
+            <button
+              onClick={() => navigate("/checkout-success")}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm py-4 rounded-xl transition-all shadow-md shadow-indigo-100 flex items-center justify-center gap-2 group">
               <CreditCard size={18} />
               <span>Proceed to Secure Checkout</span>
             </button>

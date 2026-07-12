@@ -1,11 +1,12 @@
-import { Menu, X, ShoppingCart, Search, User, ChevronDown, Sparkles } from 'lucide-react';
+import { Menu, X, ShoppingCart, Search, User, ChevronDown, Sparkles, LogOut } from 'lucide-react';
 import { useState } from "react"
 import { Link } from "react-router-dom";
 import { useCart } from '../context/CartContext';
 
 const Navbar = () => {
-  const { cartCount } = useCart()
+  const { cartCount, user, logout } = useCart()
   const [isOpen, setIsOpen] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   return (
     <nav className="bg-white border-b border-slate-100 sticky top-0 z-50">
@@ -76,11 +77,49 @@ const Navbar = () => {
               <Search size={22} />
             </button>
 
-            {/* Login - Desktop Only */}
-            <Link to="/login" className="hidden md:flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors px-3 py-2 rounded-xl hover:bg-slate-50">
-              <User size={18} />
-              <span>Login</span>
-            </Link>
+            {/* DYNAMIC USER PROFILE BLOCK */}
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-indigo-600 transition-colors px-3 py-2 rounded-xl hover:bg-slate-50 border border-slate-100 bg-slate-50/50"
+                >
+                  <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold font-mono uppercase">
+                    {user.username?.[0] || 'U'}
+                  </div>
+                  <span className="max-w-[80px] truncate capitalize">{user.username}</span>
+                  <ChevronDown size={14} className={`transition-transform duration-200 ${showProfileMenu ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Floating Action Dropdown Menu */}
+                {showProfileMenu && (
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-100 shadow-xl rounded-xl py-2 z-50 text-left animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="px-4 py-2 border-b border-slate-50 text-xs text-slate-400 font-medium truncate">
+                      {user.email}
+                    </div>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setShowProfileMenu(false);
+                      }}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-rose-50 text-rose-600 font-medium text-sm transition-colors"
+                    >
+                      <LogOut size={16} />
+                      <span>Sign Out Profile</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* If no active session user object profile exists, display default link */
+              <Link
+                to="/login"
+                className="hidden md:flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors px-3 py-2 rounded-xl hover:bg-slate-50"
+              >
+                <User size={18} />
+                <span>Login</span>
+              </Link>
+            )}
 
             {/* Cart (Right side on both Mobile and Desktop) */}
             <Link to="/cart"

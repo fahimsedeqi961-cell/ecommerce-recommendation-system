@@ -5,6 +5,7 @@ import Footer from "./components/Footer"
 import Home from "./pages/home/Home"
 import Auth from "./components/Auth"
 import CartPage from "./pages/CartPage"
+import CheckoutSuccess from "./pages/CheckoutSuccess"
 function App() {
   return (
     <>
@@ -17,6 +18,7 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Auth />} />
                 <Route path="/cart" element={<CartPage />} />
+                <Route path="/checkout-success" element={<CheckoutSuccess />} />
               </Routes>
             </main>
             <Footer />

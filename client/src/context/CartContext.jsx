@@ -7,7 +7,7 @@ export const CartProvider = ({ children }) => {
   const [user, setUser] = useState(null); // Holds the authenticated user state
   const [loading, setLoading] = useState(true);
 
-  // 1. VERIFY AUTH STATUS ON STARTUP (Queries your new /me route via cookies)
+  // 1. VERIFY AUTH STATUS ON STARTUP (Queries  new /me route via cookies)
   const checkAuthStatus = async () => {
     try {
       const response = await fetch('http://localhost:2000/api/auth/me', {
@@ -147,6 +147,25 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  const logout = async () => {
+    try {
+      const response = await fetch('http://localhost:2000/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include', // Mandatory to tell the browser to drop the httpOnly cookie
+      });
+
+      if (response.ok) {
+        setUser(null); // Clear the frontend user state
+        setCartItems([]); // Reset active cart arrays locally
+        localStorage.removeItem('smartShopCart'); // Wipe local storage caches
+        window.location.href = "/"; // Redirect clean to the home dashboard view
+      }
+    } catch (err) {
+      console.error("Logout network execution breakdown:", err);
+    }
+  };
+
+
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
   const cartTotal = cartItems.reduce((acc, item) => acc + (Number(item.price || 0) * item.quantity), 0);
 
@@ -154,7 +173,7 @@ export const CartProvider = ({ children }) => {
     <CartContext.Provider value={{
       cartItems, addToCart, removeFromCart, clearCart,
       cartCount, cartTotal, loading, user, checkAuthStatus,
-      incrementQuantity, decrementQuantity
+      incrementQuantity, decrementQuantity, logout
     }}>
       {children}
     </CartContext.Provider>
